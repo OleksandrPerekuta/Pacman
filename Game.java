@@ -10,8 +10,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 
 public class Game extends JFrame implements KeyListener {
     public JTable borderTable;
@@ -24,7 +23,7 @@ public class Game extends JFrame implements KeyListener {
     JPanel downMenu;
     JPanel cherryPanel;
     Pacman pacman=new Pacman(this);
-    Ghost ghost=new Ghost(this);
+    Ghost ghost;
     Game game=this;
     int ghostQuantity;
     ArrayList<Ghost> ghosts=new ArrayList<>();
@@ -33,6 +32,15 @@ public class Game extends JFrame implements KeyListener {
     int scoreCounter;
     public Game(){
         ghostQuantity=(int)SIZE/10;
+        for (int i=0;i<ghostQuantity;i++){
+            ghost=new Ghost(game);
+            ghost.setX((SIZE/2)-(ghostQuantity/2)+i);
+            ghost.setY(2);
+            ghost.setRadius(cellSize);
+            ghosts.add(ghost);
+        }
+
+
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         DisplayMode mode = gd.getDisplayMode();
         pane = new JLayeredPane();
@@ -65,7 +73,7 @@ public class Game extends JFrame implements KeyListener {
             }
         }
         borderTable = new JTable(modelForBorders);
-        borderTable.setGridColor(Color.BLACK);
+        borderTable.setGridColor(Color.WHITE);
         borderTable.setBackground(Color.black);
         borderTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
             @Override
@@ -115,6 +123,7 @@ public class Game extends JFrame implements KeyListener {
                     }else{
                         try {
                             pacmanImage = ImageIO.read(pacman.getPacmanImage(0));
+
                         } catch (IOException e) {e.printStackTrace();}
                     }
                     try {
@@ -122,6 +131,9 @@ public class Game extends JFrame implements KeyListener {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                }
+                for (Ghost value : ghosts) {
+                    g.drawImage(ghostImage, value.convertXtoPixels(), value.convertYtoPixels(), value.getRadius(), value.getRadius(), null);
                 }
                 g.drawImage(pacmanImage,pacman.convertXtoPixels(),pacman.convertYtoPixels(),pacman.getRadius(),pacman.getRadius(),null);
             }
@@ -138,6 +150,8 @@ public class Game extends JFrame implements KeyListener {
                 circlePanel.setBounds(0, 0, panelWidth, panelHeight/100*95);
                 borderTable.setBounds(0, 0, panelWidth, panelHeight/100*95);
                 downMenu.setBounds(0,panelHeight/100*95,panelWidth,panelHeight/20);
+                for (Ghost ghost1: ghosts)
+                    ghost1.setRadius(cellSize);
                 pacman.setRadius(cellSize);
             }
         });
@@ -181,6 +195,8 @@ public class Game extends JFrame implements KeyListener {
             }
         });
         pacman.moving();
+        for(Ghost ghost1: ghosts)
+            ghost1.moving();
     }
     private Rectangle getCoordinatesOfTheCell(int row, int column){
         return borderTable.getCellRect(row, column, true);
@@ -236,6 +252,36 @@ public class Game extends JFrame implements KeyListener {
 
     public boolean getCellValue(int row, int col) {
         return cells[row][col];
+    }
+    public static ArrayList<int[]> findRoute(boolean[][] maze, int startX, int startY, int routeLength) {
+        ArrayList<int[]> route = new ArrayList<>();
+        int[][] moves={{0,1},{0,-1},{1,0},{-1,0}};
+        int currentX=startX;
+        int currentY=startY;
+        int randomMove;
+        int Dx;
+        int Dy;
+        boolean isMovable;
+        for (int i=0;i<routeLength;i++){
+            do{
+                randomMove=new Random().nextInt(4);
+                Dx=moves[randomMove][0];
+                Dy=moves[randomMove][1];
+                if(!maze[currentY+Dy][currentX+Dx])
+                    isMovable=false;
+                else
+                    isMovable=true;
+            }while (!isMovable);
+            currentX+=Dx;
+            currentY+=Dy;
+            route.add(new int[]{currentX, currentY});
+        }
+        return route;
+    }
+
+
+    public boolean[][] getCells() {
+        return cells;
     }
 }
 class Pacman {
@@ -293,7 +339,6 @@ class Pacman {
             public void run() {
                 while (true){
                     moveIfPossible();
-                    System.out.println("x = "+x+"\ny = "+y);
                     game.circlePanel.repaint();
                     try {
 
@@ -366,7 +411,9 @@ class Ghost{
     private int dx;
     private int dy;
     private int radius;
+    int randomLength=0;
     private int position=0;
+    ArrayList<int[]> route;
     public Ghost(Game game){
         this.game=game;
     }
@@ -404,6 +451,47 @@ class Ghost{
     public int convertYtoPixels(){
         Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
         return rectangle.y;
+    }
+
+    public ArrayList<int[]> getRoute() {
+        return route;
+    }
+
+    public void moving(){
+        do {
+            randomLength=new Random().nextInt(200);
+        }while(randomLength%2!=0);
+        Thread thread=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    route= Game.findRoute(game.getCells(),x,y,randomLength);
+                    for (int i=0;i<route.size();i++){
+                        int[] way=route.get(i);
+                        x=way[0];
+                        y=way[1];
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        game.circlePanel.repaint();
+                    }
+
+                }
+            }
+        });
+        thread.start();
+    }
+    private boolean moveIfPossible(){
+        int nextX=x+dx;
+        int nextY=y+dy;
+        if (game.getCellValue(nextY,nextX)){
+            x+=dx;
+            y+=dy;
+            return true;
+        }else
+            return false;
     }
 }
 
