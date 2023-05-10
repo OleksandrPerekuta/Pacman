@@ -14,7 +14,7 @@ import java.util.*;
 
 public class Game extends JFrame implements KeyListener {
     public JTable borderTable;
-    public final int SIZE = 30;
+    public final int SIZE = 20;
     public int cellSize;
     private boolean[][] cells;
      boolean[][] cherriesArray;
@@ -32,13 +32,7 @@ public class Game extends JFrame implements KeyListener {
     int scoreCounter;
     public Game(){
         ghostQuantity=(int)SIZE/10;
-        for (int i=0;i<ghostQuantity;i++){
-            ghost=new Ghost(game);
-            ghost.setX((SIZE/2)-(ghostQuantity/2)+i);
-            ghost.setY(2);
-            ghost.setRadius(cellSize);
-            ghosts.add(ghost);
-        }
+
 
 
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -46,10 +40,7 @@ public class Game extends JFrame implements KeyListener {
         pane = new JLayeredPane();
         pane.setLayout(new BorderLayout());
         cells = new boolean[SIZE][SIZE];
-//        for (int i=0;i<SIZE;i++)
-//            for (int j=0;j<SIZE;j++){
-//                cells[i][j]=new Random().nextBoolean();
-//            }
+
         for (int i=0;i<SIZE;i++){
             for (int j=0;j<SIZE;j++){
                 cells[i][j]=true;
@@ -59,13 +50,21 @@ public class Game extends JFrame implements KeyListener {
         cells[SIZE/2-1][SIZE/2]=true;
         cells[SIZE/2][SIZE/2-1]=true;
         cells[SIZE/2-1][SIZE/2-1]=true;
-        for (int i=0;i<SIZE;i++){
-            for (int j=0;j<SIZE;j++){
-                if (i==0||i==(SIZE-1)||j==0||j==(SIZE-1))
-                    cells[i][j]=false;
-            }
+//        for (int i=0;i<SIZE;i++){
+//            for (int j=0;j<SIZE;j++){
+//                if (i==0||i==(SIZE-1)||j==0||j==(SIZE-1))
+//                    cells[i][j]=false;
+//            }
+//        }
+        for (int i=0;i<ghostQuantity;i++){
+            ghost=new Ghost(game);
+            ghost.setX((SIZE/2)-(ghostQuantity/2)+i);
+            ghost.setY(2);
+            ghost.setRadius(cellSize);
+            ghosts.add(ghost);
+            ghost.setCells(cells);
         }
-
+        pacman.setCells(cells);
         DefaultTableModel modelForBorders = new DefaultTableModel(SIZE, SIZE);
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -73,7 +72,7 @@ public class Game extends JFrame implements KeyListener {
             }
         }
         borderTable = new JTable(modelForBorders);
-        borderTable.setGridColor(Color.WHITE);
+        borderTable.setGridColor(Color.black);
         borderTable.setBackground(Color.black);
         borderTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
             @Override
@@ -197,6 +196,7 @@ public class Game extends JFrame implements KeyListener {
         pacman.moving();
         for(Ghost ghost1: ghosts)
             ghost1.moving();
+
     }
     private Rectangle getCoordinatesOfTheCell(int row, int column){
         return borderTable.getCellRect(row, column, true);
@@ -253,245 +253,13 @@ public class Game extends JFrame implements KeyListener {
     public boolean getCellValue(int row, int col) {
         return cells[row][col];
     }
-    public static ArrayList<int[]> findRoute(boolean[][] maze, int startX, int startY, int routeLength) {
-        ArrayList<int[]> route = new ArrayList<>();
-        int[][] moves={{0,1},{0,-1},{1,0},{-1,0}};
-        int currentX=startX;
-        int currentY=startY;
-        int randomMove;
-        int Dx;
-        int Dy;
-        boolean isMovable;
-        for (int i=0;i<routeLength;i++){
-            do{
-                randomMove=new Random().nextInt(4);
-                Dx=moves[randomMove][0];
-                Dy=moves[randomMove][1];
-                if(!maze[currentY+Dy][currentX+Dx])
-                    isMovable=false;
-                else
-                    isMovable=true;
-            }while (!isMovable);
-            currentX+=Dx;
-            currentY+=Dy;
-            route.add(new int[]{currentX, currentY});
-        }
-        return route;
-    }
+
 
 
     public boolean[][] getCells() {
         return cells;
     }
-}
-class Pacman {
-    private boolean isStarted=false;
-    Game game;
-    private int x;
-    private int y;
-    private int dx;
-    private int dy;
-    private int radius;
-    private int position=0;
-    private boolean isMouthOpened=false;
-    public Pacman(Game game){
-        this.game=game;
-    }
 
-    public void setY(int y) {
-        this.y = y;
-    }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setDy(int dy) {
-        this.dy = dy;
-    }
-
-    public void setDx(int dx) {
-        this.dx = dx;
-    }
-
-    public void setRadius(int radius) {
-        this.radius = radius;
-    }
-
-    public int getRadius() {
-        return radius;
-    }
-
-    public void setMouthOpened(boolean mouthOpened) {
-        isMouthOpened = mouthOpened;
-    }
-    public boolean getMouthOpened(){
-        return isMouthOpened;
-    }
-
-    public void setStarted(boolean started) {
-        isStarted = started;
-    }
-    public boolean getIsStarted(){return this.isStarted;};
-    public void moving(){
-        Thread thread=new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true){
-                    moveIfPossible();
-                    game.circlePanel.repaint();
-                    try {
-
-                        for (int i=0;i<3;i++){
-                            setMouthOpened(true);
-                            game.circlePanel.repaint();
-                            Thread.sleep(40);
-                            setMouthOpened(false);
-                            game.circlePanel.repaint();
-                            Thread.sleep(40);
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                }
-            }
-        });
-        thread.start();
-    }
-    public int convertXtoPixels(){
-        Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
-        return rectangle.x;
-    }
-    public int convertYtoPixels(){
-        Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
-        return rectangle.y;
-    }
-    private void moveIfPossible(){
-        int nextX=x+dx;
-        int nextY=y+dy;
-        if (game.getCellValue(nextY,nextX)){
-            x+=dx;
-            y+=dy;
-
-        }
-    }
-    public File getPacmanImage(int number){
-        switch (number){
-            case 0:
-                return new File("pacmanfull.png");
-            case 1:
-                return new File("pacmanLeft.png");
-            case 2:
-                return new File("pacmanUp.png");
-            case 3:
-                return new File("pacmanRight.png");
-            case 4:
-                return new File("pacmanDown.png");
-        };
-        return null;
-    }
-
-    private Rectangle getCoordinatesOfTheCell(int row, int column){
-        return game.borderTable.getCellRect(row, column, true);
-    }
-
-    public void setPosition(int position) {
-        this.position = position;
-    }
-
-    public int getPosition() {
-        return position;
-    }
-}
-class Ghost{
-    Game game;
-    private int x;
-    private int y;
-    private int dx;
-    private int dy;
-    private int radius;
-    int randomLength=0;
-    private int position=0;
-    ArrayList<int[]> route;
-    public Ghost(Game game){
-        this.game=game;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setDy(int dy) {
-        this.dy = dy;
-    }
-
-    public void setDx(int dx) {
-        this.dx = dx;
-    }
-
-    public void setRadius(int radius) {
-        this.radius = radius;
-    }
-
-    public int getRadius() {
-        return radius;
-    }
-    private Rectangle getCoordinatesOfTheCell(int row, int column){
-        return game.borderTable.getCellRect(row, column, true);
-    }
-    public int convertXtoPixels(){
-        Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
-        return rectangle.x;
-    }
-    public int convertYtoPixels(){
-        Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
-        return rectangle.y;
-    }
-
-    public ArrayList<int[]> getRoute() {
-        return route;
-    }
-
-    public void moving(){
-        do {
-            randomLength=new Random().nextInt(200);
-        }while(randomLength%2!=0);
-        Thread thread=new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true){
-                    route= Game.findRoute(game.getCells(),x,y,randomLength);
-                    for (int i=0;i<route.size();i++){
-                        int[] way=route.get(i);
-                        x=way[0];
-                        y=way[1];
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        game.circlePanel.repaint();
-                    }
-
-                }
-            }
-        });
-        thread.start();
-    }
-    private boolean moveIfPossible(){
-        int nextX=x+dx;
-        int nextY=y+dy;
-        if (game.getCellValue(nextY,nextX)){
-            x+=dx;
-            y+=dy;
-            return true;
-        }else
-            return false;
-    }
 }
 
