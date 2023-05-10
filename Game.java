@@ -1,5 +1,6 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
@@ -16,20 +17,22 @@ public class Game extends JFrame implements KeyListener {
     public JTable borderTable;
     public final int SIZE = 20;
     public int cellSize;
-    private boolean[][] cells;
+    private int[][] cells;
      boolean[][] cherriesArray;
     JLayeredPane pane;
     JPanel circlePanel;
     JPanel downMenu;
     JPanel cherryPanel;
-    Pacman pacman=new Pacman(this);
-    Ghost ghost;
     Game game=this;
+    Pacman pacman=new Pacman(game);
+    MyCustomCellRenderer myTableCellRenderer;
+    Ghost ghost;
     int ghostQuantity;
     ArrayList<Ghost> ghosts=new ArrayList<>();
     BufferedImage pacmanImage;
     BufferedImage ghostImage;
     int scoreCounter;
+    DefaultTableModel modelForBorders;
     public Game(){
         ghostQuantity=(int)SIZE/10;
 
@@ -39,23 +42,24 @@ public class Game extends JFrame implements KeyListener {
         DisplayMode mode = gd.getDisplayMode();
         pane = new JLayeredPane();
         pane.setLayout(new BorderLayout());
-        cells = new boolean[SIZE][SIZE];
+        cells = new int[SIZE][SIZE];
 
         for (int i=0;i<SIZE;i++){
             for (int j=0;j<SIZE;j++){
-                cells[i][j]=true;
+                cells[i][j]=0;
             }
         }
-        cells[SIZE/2][SIZE/2]=true;
-        cells[SIZE/2-1][SIZE/2]=true;
-        cells[SIZE/2][SIZE/2-1]=true;
-        cells[SIZE/2-1][SIZE/2-1]=true;
-//        for (int i=0;i<SIZE;i++){
-//            for (int j=0;j<SIZE;j++){
-//                if (i==0||i==(SIZE-1)||j==0||j==(SIZE-1))
-//                    cells[i][j]=false;
-//            }
-//        }
+        cells[SIZE/2][SIZE/2]=0;
+        cells[SIZE/2-1][SIZE/2]=0;
+        cells[SIZE/2][SIZE/2-1]=0;
+        cells[SIZE/2-1][SIZE/2-1]=0;
+        for (int i=0;i<SIZE;i++){
+            for (int j=0;j<SIZE;j++){
+                if (i==0||i==(SIZE-1)||j==0||j==(SIZE-1))
+                    cells[i][j]=1;
+            }
+        }
+        cells[2][2]=2;
         for (int i=0;i<ghostQuantity;i++){
             ghost=new Ghost(game);
             ghost.setX((SIZE/2)-(ghostQuantity/2)+i);
@@ -65,7 +69,7 @@ public class Game extends JFrame implements KeyListener {
             ghost.setCells(cells);
         }
         pacman.setCells(cells);
-        DefaultTableModel modelForBorders = new DefaultTableModel(SIZE, SIZE);
+        modelForBorders = new DefaultTableModel(SIZE, SIZE);
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 modelForBorders.setValueAt(cells[i][j], i, j);
@@ -74,39 +78,12 @@ public class Game extends JFrame implements KeyListener {
         borderTable = new JTable(modelForBorders);
         borderTable.setGridColor(Color.black);
         borderTable.setBackground(Color.black);
-        borderTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-                JPanel cell = new JPanel(new BorderLayout());
-                if (!((boolean) value)){
-                    JPanel insidePanel=new JPanel(){
-                        BufferedImage image = null;
-                        {
-                            try {
-                                image = ImageIO.read(new File("borderimage.png"));
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        @Override
-                        protected void paintComponent(Graphics g) {
-                            super.paintComponent(g);
-                            if (image != null) {
-                                g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
-                            }
-                        }
-                    };
-                    cell.add(insidePanel,BorderLayout.CENTER);
-                }else{
-                    cell.setBackground(Color.black);
-                }
-                return cell;
-            }
-        });
+        myTableCellRenderer=new MyCustomCellRenderer(cells);
+        borderTable.setDefaultRenderer(Object.class,myTableCellRenderer);
         cherriesArray = new boolean[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
-                if (!cells[i][j] && new Random().nextDouble() < 0.05) {
+                if (!(cells[i][j]==0) && new Random().nextDouble() < 0.05) {
                     cherriesArray[i][j] = true;
                 }
             }
@@ -185,8 +162,8 @@ public class Game extends JFrame implements KeyListener {
                     setSize(new Dimension(size, size));
                     borderTable.setRowHeight((pane.getHeight() - (getHeight() / SIZE)) / SIZE);
                     cellSize=size/100*95/SIZE;
-                    if (!pacman.getIsStarted()){
 
+                    if (!pacman.getIsStarted()){
                         pacman.setX(SIZE/2);
                         pacman.setY(SIZE-2);
                     }
@@ -196,11 +173,16 @@ public class Game extends JFrame implements KeyListener {
         pacman.moving();
         for(Ghost ghost1: ghosts)
             ghost1.moving();
-
+        myTableCellRenderer.drawCherry(borderTable,1,1);
     }
     private Rectangle getCoordinatesOfTheCell(int row, int column){
         return borderTable.getCellRect(row, column, true);
     }
+
+    public int getCellSize() {
+        return cellSize;
+    }
+
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
@@ -250,16 +232,138 @@ public class Game extends JFrame implements KeyListener {
     }
 
 
-    public boolean getCellValue(int row, int col) {
+    public int getCellValue(int row, int col) {
         return cells[row][col];
     }
 
 
 
-    public boolean[][] getCells() {
+    public int[][] getCells() {
         return cells;
     }
+    public DefaultTableModel getTableModel(){
+        return modelForBorders;
+    }
 
-
+    public JTable getBorderTable() {
+        return borderTable;
+    }
 }
 
+
+ class MyCustomCellRenderer extends DefaultTableCellRenderer {
+
+    private int[][] borders;
+    private BufferedImage borderImage;
+     private BufferedImage cherrySmallImage;
+     private BufferedImage cherryBigImage;
+
+
+     private int cherryRadius;
+
+    public MyCustomCellRenderer(int[][] borders) {
+        this.borders = borders;
+        cherryRadius = 0;
+        borderImage = null;
+        try {
+            borderImage = ImageIO.read(new File("borderimage.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            cherrySmallImage = ImageIO.read(new File("cherrySmall.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            cherryBigImage = ImageIO.read(new File("cherryBig.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void setCherryRadius(int size) {
+        cherryRadius = size;
+        System.out.println("Cherry radius is = " + cherryRadius);
+        repaint();
+    }
+
+    public void drawCherry(JTable table, int row, int column) {
+        table.setValueAt(new Cherry(row, column), row, column);
+    }
+
+    public void eraseCherry(JTable table, int row, int column) {
+        table.setValueAt(null, row, column);
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        JPanel cell = new JPanel(new BorderLayout());
+        if (borders[row][column]==0) {
+            cell.setBackground(Color.black);
+        } else if (borders[row][column]==1){
+                JPanel insidePanel = new JPanel() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        super.paintComponent(g);
+                        g.drawImage(borderImage, 0, 0, getWidth(), getHeight(), null);
+                    }
+                };
+                cell.add(insidePanel);
+                cell.setBackground(Color.white);
+        } else if (borders[row][column]==2) {
+            JPanel insidePanel = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    g.drawImage(cherrySmallImage, 0, 0, getWidth(), getHeight(), null);
+                }
+            };
+            cell.add(insidePanel);
+            cell.setBackground(Color.white);
+        }
+        else if (borders[row][column]==3) {
+            JPanel insidePanel = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    g.drawImage(cherryBigImage, 0, 0, getWidth(), getHeight(), null);
+                }
+            };
+            cell.add(insidePanel);
+            cell.setBackground(Color.white);
+        }
+        return cell;
+    }
+
+    class Cherry {
+        private static final Color COLOR = Color.WHITE;
+        private int radius;
+        private int row;
+        private int column;
+
+        public Cherry(int row, int column) {
+            this.row = row;
+            this.column = column;
+            this.radius = cherryRadius;
+            System.out.println("Cherry radius = " + radius);
+        }
+
+        public static Color getColor() {
+            return COLOR;
+        }
+
+        public int getRadius() {
+            return radius;
+        }
+
+        public int getColumn() {
+            return column;
+        }
+
+        public int getRow() {
+            return row;
+        }
+    }
+}

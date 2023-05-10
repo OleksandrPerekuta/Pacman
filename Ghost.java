@@ -4,7 +4,7 @@ import java.util.Random;
 
 class Ghost{
     Game game;
-    boolean[][] cells;
+    int[][] cells;
     int cellsWidth;
     int cellsHeight;
     private int x;
@@ -85,7 +85,7 @@ class Ghost{
         thread.start();
     }
 
-    public void setCells(boolean[][] cells) {
+    public void setCells(int[][] cells) {
         this.cells = cells;
     }
 
@@ -124,7 +124,7 @@ class Ghost{
 //            }
 //        }
 //    }
-public static ArrayList<int[]> findRoute(boolean[][] maze, int startX, int startY, int routeLength) {
+public static ArrayList<int[]> findRoute(int[][] maze, int startX, int startY, int routeLength) {
     ArrayList<int[]> route = new ArrayList<>();
     int[][] moves = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
     int currentX = startX;
@@ -132,7 +132,7 @@ public static ArrayList<int[]> findRoute(boolean[][] maze, int startX, int start
     int randomMove;
     int dx;
     int dy;
-    boolean isMovable;
+    int isMovable;
     for (int i = 0; i < routeLength; i++) {
         do {
             randomMove = new Random().nextInt(4);
@@ -143,9 +143,9 @@ public static ArrayList<int[]> findRoute(boolean[][] maze, int startX, int start
             if (nextX >= 0 && nextX < maze[0].length && nextY >= 0 && nextY < maze.length) {
                 isMovable = maze[nextY][nextX];
             } else {
-                isMovable = false;
+                isMovable = 1;
             }
-        } while (!isMovable);
+        } while (!(isMovable==0));
         currentX += dx;
         currentY += dy;
         route.add(new int[]{currentX, currentY});

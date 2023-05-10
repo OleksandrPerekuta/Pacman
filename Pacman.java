@@ -3,7 +3,8 @@ import java.io.File;
 
 class Pacman {
     private boolean isStarted=false;
-    boolean[][] cells;
+    int scoreCounter=0;
+    int[][] cells;
     int cellsWidth;
     int cellsHeight;
     Game game;
@@ -16,7 +17,7 @@ class Pacman {
     private boolean isMouthOpened=false;
     public Pacman(Game game){this.game=game;}
 
-    public void setCells(boolean[][] cells) {
+    public void setCells(int[][] cells) {
         this.cells = cells;
     }
 
@@ -115,9 +116,21 @@ class Pacman {
         } else {
             // If not at the edge, check if the next move is valid and update Pacman's position
             try {
-                if (game.getCellValue(nextY, nextX)){
+                if (game.getCellValue(nextY, nextX)!=1){
                     x += dx;
                     y += dy;
+                    if (cells[y][x]==2){
+                        cells[y][x]=0;
+                        scoreCounter+=10;
+                        System.out.println(scoreCounter);
+                        game.borderTable.repaint();
+                    }
+                    if (cells[y][x]==3){
+                        cells[y][x]=0;
+                        scoreCounter+=100;
+                        System.out.println("Score "+scoreCounter);
+                        game.borderTable.repaint();
+                    }
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
                 // Do nothing, as we have already handled the edge case above
