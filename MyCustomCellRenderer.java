@@ -44,8 +44,13 @@ public class MyCustomCellRenderer extends DefaultTableCellRenderer {
         repaint();
     }
 
+    public int[][] getBorders() {
+        return borders;
+    }
+
     public void drawCherry(JTable table, int row, int column) {
         table.setValueAt(new Cherry(), row, column);
+        table.repaint();
     }
 
     public void eraseCherry(JTable table, int row, int column) {
@@ -99,7 +104,6 @@ public class MyCustomCellRenderer extends DefaultTableCellRenderer {
 
         public Cherry() {
             this.radius = cherryRadius;
-            System.out.println("Cherry radius = " + radius);
         }
 
         public static Color getColor() {

@@ -7,6 +7,9 @@ class Ghost{
     int[][] cells;
     int cellsWidth;
     int cellsHeight;
+    int startX;
+    int startY;
+    boolean isStartSet=false;
     private int x;
     private int y;
     private int dx;
@@ -33,6 +36,14 @@ class Ghost{
 
     public void setDx(int dx) {
         this.dx = dx;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getX() {
+        return x;
     }
 
     public void setRadius(int radius) {
@@ -67,16 +78,23 @@ class Ghost{
             public void run() {
                 while (true){
                     route= findRoute(game.getCells(),x,y,randomLength);
+                    if (!isStartSet){
+                        startX=route.get(0)[0];
+                        startY=route.get(0)[1];
+                        isStartSet=true;
+                    }
                     for (int i=0;i<route.size();i++){
                         int[] way=route.get(i);
                         x=way[0];
                         y=way[1];
+                        if (game.pacman.getX()==x && game.pacman.getY()==y)
+                            game.pacman.catchGhost();
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
-                        game.circlePanel.repaint();
+                        game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
                     }
 
                 }
@@ -85,45 +103,28 @@ class Ghost{
         thread.start();
     }
 
+    public static boolean isFieldEaten(int[][] matrix) {
+        for (int[] row : matrix) {
+            for (int cell : row) {
+                if (cell != 0 && cell != 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public int getStartX() {
+        return startX;
+    }
+
+    public int getStartY() {
+        return startY;
+    }
+
     public void setCells(int[][] cells) {
         this.cells = cells;
     }
 
-//    private void moveIfPossible(){
-//        cellsWidth = cells.length;      // number of rows
-//        cellsHeight = cells[0].length;  // number of columns in the first row
-//        int nextX = x + dx;
-//        int nextY = y + dy;
-//
-//        // Check if Pacman is at the edge of the map and the next move would cause an index out of bounds exception
-//        boolean isAtLeftEdge = (x == 0 && dx == -1);
-//        boolean isAtRightEdge = (x == cellsWidth - 1 && dx == 1);
-//        boolean isAtTopEdge = (y == 0 && dy == -1);
-//        boolean isAtBottomEdge = (y == cellsHeight - 1 && dy == 1);
-//
-//        if (isAtLeftEdge || isAtRightEdge || isAtTopEdge || isAtBottomEdge) {
-//            // If at the edge, wrap Pacman's position to the opposite side of the map
-//            if (isAtLeftEdge) {
-//                x = cellsWidth - 1;
-//            } else if (isAtRightEdge) {
-//                x = 0;
-//            } else if (isAtTopEdge) {
-//                y = cellsHeight - 1;
-//            } else if (isAtBottomEdge) {
-//                y = 0;
-//            }
-//        } else {
-//            // If not at the edge, check if the next move is valid and update Pacman's position
-//            try {
-//                if (game.getCellValue(nextY, nextX)){
-//                    x += dx;
-//                    y += dy;
-//                }
-//            } catch (ArrayIndexOutOfBoundsException e) {
-//                // Do nothing, as we have already handled the edge case above
-//            }
-//        }
-//    }
 public static ArrayList<int[]> findRoute(int[][] maze, int startX, int startY, int routeLength) {
     ArrayList<int[]> route = new ArrayList<>();
     int[][] moves = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
@@ -145,7 +146,7 @@ public static ArrayList<int[]> findRoute(int[][] maze, int startX, int startY, i
             } else {
                 isMovable = 1;
             }
-        } while (!(isMovable==0));
+        } while (!(isMovable==0 || isMovable==2 || isMovable==3));
         currentX += dx;
         currentY += dy;
         route.add(new int[]{currentX, currentY});

@@ -1,13 +1,16 @@
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 
 class Pacman {
+    private int lives=3;
     private boolean isStarted=false;
     int scoreCounter=0;
     int[][] cells;
     int cellsWidth;
     int cellsHeight;
     Game game;
+    ArrayList<Ghost> ghosts=new ArrayList<>();
     private int x;
     private int y;
     private int dx;
@@ -15,10 +18,32 @@ class Pacman {
     private int radius;
     private int position=0;
     private boolean isMouthOpened=false;
+    private int startX;
+    private int startY;
     public Pacman(Game game){this.game=game;}
 
     public void setCells(int[][] cells) {
         this.cells = cells;
+    }
+
+    public void setStartX(int startX) {
+        this.startX = startX;
+    }
+
+    public void setStartY(int startY) {
+        this.startY = startY;
+    }
+
+    public int getStartY() {
+        return startY;
+    }
+
+    public int getStartX() {
+        return startX;
+    }
+
+    public void setGhosts(ArrayList<Ghost> ghosts) {
+        this.ghosts = ghosts;
     }
 
     public void setY(int y) {
@@ -67,7 +92,7 @@ class Pacman {
 
                         for (int i=0;i<3;i++){
                             setMouthOpened(true);
-                            game.circlePanel.repaint();
+                            game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
                             Thread.sleep(40);
                             setMouthOpened(false);
                             game.circlePanel.repaint();
@@ -81,6 +106,7 @@ class Pacman {
             }
         });
         thread.start();
+
     }
     public int convertXtoPixels(){
         Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
@@ -90,7 +116,7 @@ class Pacman {
         Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
         return rectangle.y;
     }
-    private void moveIfPossible(){
+    public synchronized void moveIfPossible(){
         cellsWidth = cells.length;      // number of rows
         cellsHeight = cells[0].length;  // number of columns in the first row
         int nextX = x + dx;
@@ -117,21 +143,30 @@ class Pacman {
             // If not at the edge, check if the next move is valid and update Pacman's position
             try {
                 if (game.getCellValue(nextY, nextX)!=1){
-                    x += dx;
-                    y += dy;
-                    if (cells[y][x]==2){
-                        cells[y][x]=0;
-                        scoreCounter+=10;
-                        System.out.println(scoreCounter);
-                        game.borderTable.repaint();
+                    boolean isGhost=false;
+                    for (Ghost ghost: ghosts){
+                        if (ghost.getX() == x + dx && ghost.getY() == y + dy) {
+                            isGhost = true;
+                            catchGhost();
+                        }
                     }
-                    if (cells[y][x]==3){
-                        cells[y][x]=0;
-                        scoreCounter+=100;
-                        System.out.println("Score "+scoreCounter);
-                        game.borderTable.repaint();
+                    if (!isGhost){
+                        x += dx;
+                        y += dy;
+                        if (cells[y][x]==2){
+                            cells[y][x]=0;
+                            scoreCounter+=10;
+                            System.out.println(scoreCounter);
+                            game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);// HERE
+                        }
+                        if (cells[y][x]==3){
+                            cells[y][x]=0;
+                            scoreCounter+=100;
+                            System.out.println("Score "+scoreCounter);
+                            game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
+                        }
                     }
-                }
+                    }
             } catch (ArrayIndexOutOfBoundsException e) {
                 // Do nothing, as we have already handled the edge case above
             }
@@ -154,6 +189,7 @@ class Pacman {
         return null;
     }
 
+
     private Rectangle getCoordinatesOfTheCell(int row, int column){
         return game.borderTable.getCellRect(row, column, true);
     }
@@ -164,5 +200,23 @@ class Pacman {
 
     public int getPosition() {
         return position;
+    }
+
+    public int getLives() {
+        return lives;
+    }
+    public void catchGhost(){
+        lives--;
+        game.putPacmanInStart();
+        game.downMenu.repaint();
+        System.out.println("CATCHED AT "+game.stopwatch.getSeconds());
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 }
