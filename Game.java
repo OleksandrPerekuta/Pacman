@@ -12,15 +12,15 @@ import java.io.IOException;
 import java.util.*;
 
 public class Game extends JFrame implements KeyListener {
+    String username;
     public JTable borderTable;
-    public final int SIZE = 20;
+    public  int SIZE = 20;
     public int cellSize;
     private int[][] cells;
     boolean[][] cherriesArray;
     JLayeredPane pane;
     JPanel circlePanel;
     JPanel downMenu;
-    JPanel cherryPanel;
     Game game = this;
     Pacman pacman = new Pacman(game);
     MyCustomCellRenderer myTableCellRenderer;
@@ -32,12 +32,15 @@ public class Game extends JFrame implements KeyListener {
     BufferedImage ThreeHearts;
     BufferedImage TwoHearts;
     BufferedImage OneHearts;
-
-    int scoreCounter;
-    boolean isInGame = false;
     Stopwatch stopwatch = new Stopwatch(game);
     DefaultTableModel modelForBorders;
     JLabel timerLabel = new JLabel("00:00");
+    JLabel scoreLabel=new JLabel("0");
+    JPanel timerPanel;
+    JPanel scorePanel;
+    JPanel heartsPanel;
+    Font font=null;
+
     Thread gameThread = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -48,6 +51,8 @@ public class Game extends JFrame implements KeyListener {
                 if (isFieldEaten(cells)) {
                     game.dispose();
                 }
+//                if(pacman.getLives()==0)
+//                    game.dispose();
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -59,7 +64,15 @@ public class Game extends JFrame implements KeyListener {
     });
 
 
-    public Game() {
+    public Game(int SIZE,String username) {
+        this.SIZE=SIZE;
+        this.username=username;
+        try {
+            font = Font.createFont(Font.TRUETYPE_FONT, new File("04B_30__.TTF"));
+        } catch (IOException | FontFormatException e) {
+            e.printStackTrace();
+        }
+        Font workFont = font.deriveFont(36f);
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         DisplayMode mode = gd.getDisplayMode();
         pane = new JLayeredPane();
@@ -105,28 +118,31 @@ public class Game extends JFrame implements KeyListener {
                             e.printStackTrace();
                         }
                     }
+
+                }
+                for (Ghost ghost : ghosts) {
                     try {
-                        ghostImage = ImageIO.read(new File("redGhost.png"));
+                        ghostImage=ImageIO.read(ghost.getImage());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                }
-                for (Ghost value : ghosts) {
-                    g.drawImage(ghostImage, value.convertXtoPixels(), value.convertYtoPixels(), value.getRadius(), value.getRadius(), null);
+                    g.drawImage(ghostImage, ghost.convertXtoPixels(), ghost.convertYtoPixels(), ghost.getRadius(), ghost.getRadius(), null);
                 }
                 g.drawImage(pacmanImage, pacman.convertXtoPixels(), pacman.convertYtoPixels(), pacman.getRadius(), pacman.getRadius(), null);
             }
         };
         circlePanel.setFocusable(true);
         circlePanel.requestFocusInWindow();
-        downMenu = new JPanel() {
+        downMenu = new JPanel(new GridLayout(1,3)) {
+        };
+        heartsPanel=new JPanel(){
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 try {
-                    ThreeHearts = ImageIO.read(new File("3Hearts.png"));
-                    TwoHearts = ImageIO.read(new File("2Hearts.png"));
-                    OneHearts = ImageIO.read(new File("1Hearts.png"));
+                    ThreeHearts = ImageIO.read(new File("hearts3.png"));
+                    TwoHearts = ImageIO.read(new File("hearts2.png"));
+                    OneHearts = ImageIO.read(new File("hearts1.png"));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -140,9 +156,31 @@ public class Game extends JFrame implements KeyListener {
                     g.drawImage(OneHearts, 0, 0, imageWidth, imageHeight, null);
                 }
             }
-
         };
-        downMenu.add(timerLabel); // add the timer label to the JPanel
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; // set the grid x position to 0
+        gbc.gridy = 0; // set the grid y position to 0
+        gbc.weightx = 1.0; // set the horizontal weight to 1
+        gbc.weighty = 1.0; // set the vertical weight to 1
+        gbc.anchor = GridBagConstraints.CENTER; // set the anchor to center
+        
+        timerPanel=new JPanel(new GridBagLayout());
+        timerPanel.setBackground(Color.black);
+        timerLabel.setHorizontalAlignment(JLabel.CENTER);
+        timerLabel.setFont(workFont);
+        timerLabel.setForeground(Color.yellow);
+        timerPanel.add(timerLabel,gbc);
+
+        scorePanel=new JPanel(new GridBagLayout());
+        scorePanel.setBackground(Color.black);
+        scoreLabel.setHorizontalAlignment(JLabel.CENTER);
+        scoreLabel.setFont(workFont);
+        scoreLabel.setForeground(Color.yellow);
+        scorePanel.add(scoreLabel,gbc);
+
+        downMenu.add(heartsPanel);
+        downMenu.add(timerPanel);
+        downMenu.add(scorePanel);
 
 
         pane.setLayout(null);
@@ -159,19 +197,26 @@ public class Game extends JFrame implements KeyListener {
                 pacman.setRadius(cellSize);
             }
         });
-
+        JPanel blackPanel=new JPanel();
+        blackPanel.setBackground(Color.black);
+        blackPanel.setSize(new Dimension(mode.getWidth(),mode.getHeight()));
         circlePanel.setOpaque(false);
         circlePanel.setFocusable(true);
 
 
         pane.add(borderTable, BorderLayout.CENTER, 3);
         pane.add(circlePanel, 0);
+        for (Component component : downMenu.getComponents()) {
+            component.setBackground(Color.black);
+        }
         pane.add(downMenu, 2);
+        pane.add(blackPanel,4);
         add(pane);
         addKeyListener(this);
         pane.addKeyListener(this);
         borderTable.addKeyListener(this);
         circlePanel.addKeyListener(this);
+        setTitle(username+"'s game");
         setSize(mode.getWidth(), mode.getHeight());
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -221,15 +266,6 @@ public class Game extends JFrame implements KeyListener {
                 ghost1.moving();
         }
     }
-
-    private Rectangle getCoordinatesOfTheCell(int row, int column) {
-        return borderTable.getCellRect(row, column, true);
-    }
-
-    public int getCellSize() {
-        return cellSize;
-    }
-
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
@@ -285,38 +321,25 @@ public class Game extends JFrame implements KeyListener {
         return cells;
     }
 
-    public DefaultTableModel getTableModel() {
-        return modelForBorders;
-    }
-
-    public JTable getBorderTable() {
-        return borderTable;
-    }
-
-    private void fillWithCherries() {
-    }
-
-    public Thread getGameThread() {
-        return gameThread;
-    }
-
-    public void endGame() {
-        gameThread.interrupt();
-        System.out.println(gameThread.getState());
-    }
-
     public void createWhat() {
         ghostQuantity = 2 * (int) SIZE / 10;
         for (int i = 0; i < ghostQuantity; i++) {
             ghost = new Ghost(game);
+            int randomColor;
             int randomX;
             int randomY;
             boolean isPossibleToPut = false;
             do {
+                randomColor=new Random().nextInt(6);
+                ghost.setColor(randomColor);
                 randomX = new Random().nextInt(SIZE);
                 randomY = new Random().nextInt(SIZE);
-                if (cells[randomY][randomX] != 1)
-                    isPossibleToPut = true;
+
+                if (cells[randomY][randomX] != 1){
+                    if (((randomX!=SIZE/2 && randomY!=SIZE/2) || (randomX!=SIZE/2 && randomY!=SIZE/2-1) || (randomX!=SIZE/2-1 && randomY!=SIZE/2) || (randomX!=SIZE/2-1 && randomY!=SIZE/2-1))){
+                        isPossibleToPut = true;
+                    }
+                }
             } while (!isPossibleToPut);
             ghost.setX(randomX);
             ghost.setY(randomY);

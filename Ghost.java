@@ -1,12 +1,31 @@
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
 class Ghost{
+
+    /**
+     * 1 - blue
+     * 2 - green
+     * 3 - marmoon
+     * 4 - pink
+     * 5 - red
+     * 6 - yellow
+     */
     Game game;
     int[][] cells;
     int cellsWidth;
     int cellsHeight;
+    File[][] images= {
+            {new File("Ghosts/blueGhostDown.png"),new File("Ghosts/blueGhostUp.png"),new File("Ghosts/blueGhostRight.png"),new File("Ghosts/blueGhostLeft.png")},
+            {new File("Ghosts/greenGhostDown.png"),new File("Ghosts/greenGhostUp.png"),new File("Ghosts/greenGhost.png"),new File("Ghosts/greenGhostLeft.png")},
+            {new File("Ghosts/marmoonGhostDown.png"),new File("Ghosts/marmoonGhostUp.png"),new File("Ghosts/marmoonGhost.png"),new File("Ghosts/marmoonGhostLeft.png")},
+            {new File("Ghosts/pinkGhostDown.png"),new File("Ghosts/pinkGhostUp.png"),new File("Ghosts/pinkGhostRight.png"),new File("Ghosts/pinkGhostLeft.png")},
+            {new File("Ghosts/redGhostDown.png"),new File("Ghosts/redGhostUp.png"),new File("Ghosts/redGhostRight.png"),new File("Ghosts/redGhostLeft.png")},
+            {new File("Ghosts/yellowGhostDown.png"),new File("Ghosts/yellowGhostUp.png"),new File("Ghosts/yellowGhostRight.png"),new File("Ghosts/yellowGhostLeft.png")}
+    };
+    int color;
     int startX;
     int startY;
     boolean isStartSet=false;
@@ -85,8 +104,19 @@ class Ghost{
                     }
                     for (int i=0;i<route.size();i++){
                         int[] way=route.get(i);
+                        int dx=way[0]-x;
+                        int dy=way[1]-y;
                         x=way[0];
                         y=way[1];
+                        if (dx==0 && dy==1)
+                            position=0;//down
+                        else if (dx==0 && dy==-1) {
+                            position=1;//up
+                        } else if (dx==1 && dy==0) {
+                            position=2;//right
+                        }else if (dx==-1 && dy==0){
+                            position=3;//left
+                        }
                         if (game.pacman.getX()==x && game.pacman.getY()==y)
                             game.pacman.catchGhost();
                         try {
@@ -103,6 +133,16 @@ class Ghost{
         thread.start();
     }
 
+    public void setColor(int color) {
+        this.color = color;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+    public File getImage(){
+        return images[color][position];
+    }
     public static boolean isFieldEaten(int[][] matrix) {
         for (int[] row : matrix) {
             for (int cell : row) {

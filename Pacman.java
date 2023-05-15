@@ -5,7 +5,7 @@ import java.util.ArrayList;
 class Pacman {
     private int lives=3;
     private boolean isStarted=false;
-    int scoreCounter=0;
+    int scoreCounter=-10;
     int[][] cells;
     int cellsWidth;
     int cellsHeight;
@@ -156,12 +156,14 @@ class Pacman {
                         if (cells[y][x]==2){
                             cells[y][x]=0;
                             scoreCounter+=10;
+                            game.scoreLabel.setText(String.valueOf(scoreCounter));
                             System.out.println(scoreCounter);
                             game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);// HERE
                         }
                         if (cells[y][x]==3){
                             cells[y][x]=0;
                             scoreCounter+=100;
+                            game.scoreLabel.setText(String.valueOf(scoreCounter));
                             System.out.println("Score "+scoreCounter);
                             game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
                         }
@@ -209,7 +211,7 @@ class Pacman {
         lives--;
         game.putPacmanInStart();
         game.downMenu.repaint();
-        System.out.println("CATCHED AT "+game.stopwatch.getSeconds());
+
     }
 
     public int getX() {
