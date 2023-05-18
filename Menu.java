@@ -21,7 +21,7 @@ public class Menu extends JFrame implements KeyListener {
         Font workFont = font.deriveFont(36f);
         addKeyListener(this);
         JLabel newGame=new JLabel("NEW GAME");
-        JLabel bestRate=new JLabel("BEST RATE");
+        JLabel bestRate=new JLabel("HIGH SCORE");
         JLabel exit=new JLabel("EXIT");
         menuLabels.add(newGame);
         menuLabels.add(bestRate);
@@ -111,7 +111,7 @@ public class Menu extends JFrame implements KeyListener {
                     this.dispose();
                     break;
                 case 1:
-                    SwingUtilities.invokeLater(()->new Score());
+                    SwingUtilities.invokeLater(()->new HighScore());
                     this.dispose();
                     break;
                 case 2:

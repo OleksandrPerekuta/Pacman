@@ -31,6 +31,8 @@ class Ghost{
     boolean isStartSet=false;
     private int x;
     private int y;
+    int [] speed={250,500,750,1000,2000,2500};
+    int speedIndex=3;
     private int dx;
     private int dy;
     private int radius;
@@ -120,11 +122,11 @@ class Ghost{
                         if (game.pacman.getX()==x && game.pacman.getY()==y)
                             game.pacman.catchGhost();
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(speed[speedIndex]);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
-                        game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
+                        game.circlePanel.repaint();
                     }
 
                 }
@@ -142,6 +144,12 @@ class Ghost{
     }
     public File getImage(){
         return images[color][position];
+    }
+    public void setSpeedIndex(int speedIndex) {
+        this.speedIndex = speedIndex;
+    }
+    public int getSpeedIndex() {
+        return speedIndex;
     }
     public static boolean isFieldEaten(int[][] matrix) {
         for (int[] row : matrix) {
@@ -193,5 +201,6 @@ public static ArrayList<int[]> findRoute(int[][] maze, int startX, int startY, i
     }
     return route;
 }
+
 }
 

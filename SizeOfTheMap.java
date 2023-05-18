@@ -96,7 +96,6 @@ public class SizeOfTheMap extends JFrame implements KeyListener {
         getContentPane().add(mainPanel, BorderLayout.CENTER);
         setSize(mainPanel.getPreferredSize());
         setLayout(new FlowLayout(0, 0, 0));
-
         setLocationRelativeTo(null);
         addKeyListener(this);
         setFocusTraversalKeysEnabled(false);

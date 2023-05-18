@@ -1,8 +1,23 @@
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Random;
 
 class Pacman {
+    int [] speed={10,20,40,160,240,360};
+    File[][] images={
+            {new File("pacmanImages/1left.png"),new File("pacmanImages/2left.png"),new File("pacmanImages/3left.png"),new File("pacmanImages/4left.png"),new File("pacmanImages/5left.png"),new File("pacmanImages/6left.png")},
+            {new File("pacmanImages/1up.png"),new File("pacmanImages/2up.png"),new File("pacmanImages/3up.png"),new File("pacmanImages/4up.png"),new File("pacmanImages/5up.png"),new File("pacmanImages/6up.png"),},
+            {new File("pacmanImages/1right.png"),new File("pacmanImages/2right.png"),new File("pacmanImages/3right.png"),new File("pacmanImages/4right.png"),new File("pacmanImages/5right.png"),new File("pacmanImages/6right.png"),},
+            {new File("pacmanImages/1down.png"),new File("pacmanImages/2down.png"),new File("pacmanImages/3down.png"),new File("pacmanImages/4down.png"),new File("pacmanImages/5down.png"),new File("pacmanImages/6down.png"),}};
+    /**
+     * left
+     * up
+     * right
+     * down
+     */
+    int speedIndex=2;
+    int positionImage=0;
     private int lives=3;
     private boolean isStarted=false;
     int scoreCounter=-10;
@@ -77,6 +92,13 @@ class Pacman {
         return isMouthOpened;
     }
 
+    public void setSpeedIndex(int speedIndex) {
+        this.speedIndex = speedIndex;
+    }
+    public int getSpeedIndex() {
+        return speedIndex;
+    }
+
     public void setStarted(boolean started) {
         isStarted = started;
     }
@@ -86,18 +108,30 @@ class Pacman {
             @Override
             public void run() {
                 while (true){
+                    game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),radius,radius);
                     moveIfPossible();
-                    game.circlePanel.repaint();
                     try {
-
-                        for (int i=0;i<3;i++){
-                            setMouthOpened(true);
-                            game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
-                            Thread.sleep(40);
-                            setMouthOpened(false);
-                            game.circlePanel.repaint();
-                            Thread.sleep(40);
+//                        for (int i=0;i<3;i++){
+//                            setMouthOpened(true);
+//                            game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
+//                            Thread.sleep(speed[speedIndex]);
+//                            setMouthOpened(false);
+//                            game.circlePanel.repaint();
+//                            Thread.sleep(speed[speedIndex]);
+//                        }
+                        for (int j=0;j<2;j++){
+                            for (int i=0;i<images[0].length-1;i++){
+                                positionImage=i;
+                                game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),radius,radius);
+                                Thread.sleep(speed[speedIndex]/2);
+                            }
+                            for (int i=images[0].length-1;i>=0;i--){
+                                positionImage=i;
+                                game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),radius,radius);
+                                Thread.sleep(speed[speedIndex]/2);
+                            }
                         }
+
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -158,37 +192,31 @@ class Pacman {
                             scoreCounter+=10;
                             game.scoreLabel.setText(String.valueOf(scoreCounter));
                             System.out.println(scoreCounter);
-                            game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);// HERE
+                            game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),radius,radius);// HERE
                         }
                         if (cells[y][x]==3){
                             cells[y][x]=0;
-                            scoreCounter+=100;
+                            int random=new Random().nextInt(10);
+                            if (random<6){
+                                scoreCounter-=100;
+                            }
+                            else{
+                                scoreCounter+=100;
+                            }
+                            game.causeRandomEffect();
                             game.scoreLabel.setText(String.valueOf(scoreCounter));
                             System.out.println("Score "+scoreCounter);
-                            game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
+                            game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),radius,radius);
                         }
                     }
                     }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // Do nothing, as we have already handled the edge case above
+            } catch (ArrayIndexOutOfBoundsException ignored) {
             }
         }
     }
 
-    public File getPacmanImage(int number){
-        switch (number){
-            case 0:
-                return new File("pacmanfull.png");
-            case 1:
-                return new File("pacmanLeft.png");
-            case 2:
-                return new File("pacmanUp.png");
-            case 3:
-                return new File("pacmanRight.png");
-            case 4:
-                return new File("pacmanDown.png");
-        };
-        return null;
+    public File getPacmanImage(){
+        return images[position][positionImage];
     }
 
 
@@ -213,12 +241,15 @@ class Pacman {
         game.downMenu.repaint();
 
     }
-
     public int getX() {
         return x;
     }
 
     public int getY() {
         return y;
+    }
+
+    public int getScoreCounter() {
+        return scoreCounter;
     }
 }

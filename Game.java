@@ -14,7 +14,8 @@ import java.util.*;
 public class Game extends JFrame implements KeyListener {
     String username;
     public JTable borderTable;
-    public  int SIZE = 20;
+    int score;
+    public  int SIZE;
     public int cellSize;
     private int[][] cells;
     boolean[][] cherriesArray;
@@ -47,12 +48,17 @@ public class Game extends JFrame implements KeyListener {
             for (Ghost ghost1 : ghosts)
                 ghost1.moving();
             while (true) {
-                System.out.println(isFieldEaten(cells));
                 if (isFieldEaten(cells)) {
+                    SwingUtilities.invokeLater(()->new Winning(getUsername(),pacman.getScoreCounter()));
                     game.dispose();
+                    gameThread.stop();
                 }
-//                if(pacman.getLives()==0)
-//                    game.dispose();
+                if(pacman.getLives()==0){
+                    SwingUtilities.invokeLater(()->new Lost());
+                    game.dispose();
+                    gameThread.stop();
+                }
+                System.out.println("pacman score = "+pacman.getScoreCounter());
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -104,21 +110,11 @@ public class Game extends JFrame implements KeyListener {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 {
-                    if (pacman.getMouthOpened()) {
-                        try {
-                            pacmanImage = ImageIO.read(pacman.getPacmanImage(pacman.getPosition()));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        try {
-                            pacmanImage = ImageIO.read(pacman.getPacmanImage(0));
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        pacmanImage = ImageIO.read(pacman.getPacmanImage());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-
                 }
                 for (Ghost ghost : ghosts) {
                     try {
@@ -273,28 +269,28 @@ public class Game extends JFrame implements KeyListener {
             pacman.setDx(-1);
             pacman.setDy(0);
             pacman.setStarted(true);
-            pacman.setPosition(1);
+            pacman.setPosition(0);
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_RIGHT) {
             pacman.setDx(1);
             pacman.setDy(0);
             pacman.setStarted(true);
-            pacman.setPosition(3);
+            pacman.setPosition(2);
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_UP) {
             pacman.setDx(0);
             pacman.setDy(-1);
             pacman.setStarted(true);
-            pacman.setPosition(2);
+            pacman.setPosition(1);
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_DOWN) {
             pacman.setDx(0);
             pacman.setDy(1);
             pacman.setStarted(true);
-            pacman.setPosition(4);
+            pacman.setPosition(3);
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_ESCAPE) {
@@ -350,6 +346,41 @@ public class Game extends JFrame implements KeyListener {
         pacman.setCells(cells);
         pacman.setGhosts(ghosts);
         pacman.moving();
+    }
 
+    public String getUsername() {
+        return username;
+    }
+    public void causeRandomEffect(){
+        int randomEffect=new Random().nextInt(3);
+        int randomSpeed=new Random().nextInt(6);
+        switch (randomEffect){
+            case 0://change speed of ghost
+            {
+                for (Ghost ghost:ghosts)
+                    ghost.setSpeedIndex(randomSpeed);
+                System.out.println("ghost speed changed");
+            }
+            break;
+            case 1:{
+                pacman.setSpeedIndex(randomSpeed);
+                System.out.println("pacman speed changed");
+
+            }
+            break;
+
+            case 3:{
+                for (Ghost ghost:ghosts){
+                    int randomColor=new Random().nextInt(6);
+                    ghost.setColor(randomColor);
+                }
+                System.out.println("ghost speed changed");
+            }
+            break;
+
+            default:
+                System.out.println("else");
+
+        }
     }
 }
