@@ -58,7 +58,6 @@ public class Game extends JFrame implements KeyListener {
                     game.dispose();
                     gameThread.stop();
                 }
-                System.out.println("pacman score = "+pacman.getScoreCounter());
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -154,11 +153,11 @@ public class Game extends JFrame implements KeyListener {
             }
         };
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0; // set the grid x position to 0
-        gbc.gridy = 0; // set the grid y position to 0
-        gbc.weightx = 1.0; // set the horizontal weight to 1
-        gbc.weighty = 1.0; // set the vertical weight to 1
-        gbc.anchor = GridBagConstraints.CENTER; // set the anchor to center
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
         
         timerPanel=new JPanel(new GridBagLayout());
         timerPanel.setBackground(Color.black);
@@ -266,34 +265,63 @@ public class Game extends JFrame implements KeyListener {
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_LEFT) {
-            pacman.setDx(-1);
-            pacman.setDy(0);
             pacman.setStarted(true);
-            pacman.setPosition(0);
+            if (!pacman.getIsInverted()) {
+                pacman.setPosition(0);
+                pacman.setDx(-1);
+                pacman.setDy(0);
+            }else {
+                pacman.setPosition(2);
+                pacman.setDx(1);
+                pacman.setDy(0);
+            }
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_RIGHT) {
-            pacman.setDx(1);
-            pacman.setDy(0);
             pacman.setStarted(true);
-            pacman.setPosition(2);
+            if (!pacman.getIsInverted()) {
+                pacman.setPosition(2);
+                pacman.setDx(1);
+                pacman.setDy(0);
+            }else {
+                pacman.setPosition(0);
+                pacman.setDx(-1);
+                pacman.setDy(0);
+            }
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_UP) {
-            pacman.setDx(0);
-            pacman.setDy(-1);
+
             pacman.setStarted(true);
-            pacman.setPosition(1);
+            if (!pacman.getIsInverted()) {
+                pacman.setPosition(1);
+                pacman.setDx(0);
+                pacman.setDy(-1);
+            }else {
+                pacman.setPosition(3);
+                pacman.setDx(0);
+                pacman.setDy(1);
+            }
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_DOWN) {
-            pacman.setDx(0);
-            pacman.setDy(1);
             pacman.setStarted(true);
-            pacman.setPosition(3);
+            if (!pacman.getIsInverted()) {
+                pacman.setPosition(3);
+                pacman.setDx(0);
+                pacman.setDy(1);
+            }else {
+                pacman.setPosition(1);
+                pacman.setDx(0);
+                pacman.setDy(-1);
+            }
             if (gameThread.getState() == Thread.State.NEW)
                 gameThread.start();
         } else if (keyCode == KeyEvent.VK_ESCAPE) {
+            this.dispose();
+        }else if (e.isShiftDown() && e.isControlDown() && e.getKeyCode()==KeyEvent.VK_Q) {
+            SwingUtilities.invokeLater(()->new Menu());
+            gameThread.stop();
             this.dispose();
         }
     }
@@ -352,7 +380,7 @@ public class Game extends JFrame implements KeyListener {
         return username;
     }
     public void causeRandomEffect(){
-        int randomEffect=new Random().nextInt(3);
+        int randomEffect=new Random().nextInt(5);
         int randomSpeed=new Random().nextInt(6);
         switch (randomEffect){
             case 0://change speed of ghost
@@ -365,11 +393,9 @@ public class Game extends JFrame implements KeyListener {
             case 1:{
                 pacman.setSpeedIndex(randomSpeed);
                 System.out.println("pacman speed changed");
-
+                break;
             }
-            break;
-
-            case 3:{
+            case 2:{
                 for (Ghost ghost:ghosts){
                     int randomColor=new Random().nextInt(6);
                     ghost.setColor(randomColor);
@@ -377,10 +403,19 @@ public class Game extends JFrame implements KeyListener {
                 System.out.println("ghost speed changed");
             }
             break;
-
+            case 3:{
+                System.out.println("inversed keys");
+                pacman.changeInverted();
+                break;
+            }
+            case 4:{
+                System.out.println("teleportation happened");
+                pacman.teleportRandomPoint();
+                break;
+            }
             default:
                 System.out.println("else");
-
+                break;
         }
     }
 }

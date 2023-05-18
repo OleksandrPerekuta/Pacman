@@ -15,8 +15,6 @@ class Ghost{
      */
     Game game;
     int[][] cells;
-    int cellsWidth;
-    int cellsHeight;
     File[][] images= {
             {new File("Ghosts/blueGhostDown.png"),new File("Ghosts/blueGhostUp.png"),new File("Ghosts/blueGhostRight.png"),new File("Ghosts/blueGhostLeft.png")},
             {new File("Ghosts/greenGhostDown.png"),new File("Ghosts/greenGhostUp.png"),new File("Ghosts/greenGhost.png"),new File("Ghosts/greenGhostLeft.png")},
@@ -33,8 +31,6 @@ class Ghost{
     private int y;
     int [] speed={250,500,750,1000,2000,2500};
     int speedIndex=3;
-    private int dx;
-    private int dy;
     private int radius;
     int randomLength=0;
     private int position=0;
@@ -49,14 +45,6 @@ class Ghost{
 
     public void setX(int x) {
         this.x = x;
-    }
-
-    public void setDy(int dy) {
-        this.dy = dy;
-    }
-
-    public void setDx(int dx) {
-        this.dx = dx;
     }
 
     public int getY() {
@@ -85,11 +73,6 @@ class Ghost{
         Rectangle rectangle=getCoordinatesOfTheCell(this.y,this.x);
         return rectangle.y;
     }
-
-    public ArrayList<int[]> getRoute() {
-        return route;
-    }
-
     public void moving(){
         do {
             randomLength=new Random().nextInt(200);
@@ -138,37 +121,12 @@ class Ghost{
     public void setColor(int color) {
         this.color = color;
     }
-
-    public int getPosition() {
-        return position;
-    }
     public File getImage(){
         return images[color][position];
     }
     public void setSpeedIndex(int speedIndex) {
         this.speedIndex = speedIndex;
     }
-    public int getSpeedIndex() {
-        return speedIndex;
-    }
-    public static boolean isFieldEaten(int[][] matrix) {
-        for (int[] row : matrix) {
-            for (int cell : row) {
-                if (cell != 0 && cell != 1) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    public int getStartX() {
-        return startX;
-    }
-
-    public int getStartY() {
-        return startY;
-    }
-
     public void setCells(int[][] cells) {
         this.cells = cells;
     }

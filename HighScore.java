@@ -34,15 +34,13 @@ public class HighScore extends JFrame implements KeyListener {
         sortedList.setForeground(Color.yellow);
         sortedList.setBackground(Color.black);
         sortedList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        sortedList.setVisibleRowCount(5); // Show only the first 5 lines
+        sortedList.setVisibleRowCount(5); // show  first 5 lines
 
         JScrollPane scrollPane = new JScrollPane(sortedList);
         getContentPane().add(scrollPane);
 
-        // Read and sort the lines from the text file
         List<String> sortedLines = readAndSortLinesFromFile("scores.txt");
 
-        // Display the sorted lines in the JList
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (int i = 0; i < Math.min(sortedLines.size(), 5); i++) {
             listModel.addElement(sortedLines.get(i));
@@ -102,13 +100,10 @@ public class HighScore extends JFrame implements KeyListener {
             e.printStackTrace();
         }
 
-        // Sort the lines based on the integers using a custom Comparator
         Collections.sort(lines, new LineComparator());
 
         return lines;
     }
-
-    // Custom Comparator implementation to sort lines based on the integers using regex
     private static class LineComparator implements Comparator<String> {
         private static final Pattern INTEGER_PATTERN = Pattern.compile("(\\d+)");
 
@@ -120,10 +115,8 @@ public class HighScore extends JFrame implements KeyListener {
             if (matcher1.find() && matcher2.find()) {
                 int integer1 = Integer.parseInt(matcher1.group());
                 int integer2 = Integer.parseInt(matcher2.group());
-                return Integer.compare(integer2, integer1); // Compare in reverse order for largest to smallest
+                return Integer.compare(integer2, integer1);
             }
-
-            // If no integers found, consider the lines equal
             return 0;
         }
     }
@@ -136,6 +129,9 @@ public class HighScore extends JFrame implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            SwingUtilities.invokeLater(()->new Menu());
+            this.dispose();
+        }else if (e.isShiftDown() && e.isControlDown() && e.getKeyCode()==KeyEvent.VK_Q) {
             SwingUtilities.invokeLater(()->new Menu());
             this.dispose();
         }

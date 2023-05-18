@@ -7,18 +7,13 @@ import java.io.File;
 import java.io.IOException;
 
 public class MyCustomCellRenderer extends DefaultTableCellRenderer {
-
     private int[][] borders;
     private BufferedImage borderImage;
     private BufferedImage cherrySmallImage;
     private BufferedImage cherryBigImage;
 
-
-    private int cherryRadius;
-
     public MyCustomCellRenderer(int[][] borders) {
         this.borders = borders;
-        cherryRadius = 0;
         borderImage = null;
         try {
             borderImage = ImageIO.read(new File("borderimage.png"));
@@ -37,26 +32,6 @@ public class MyCustomCellRenderer extends DefaultTableCellRenderer {
         }
 
     }
-
-    public void setCherryRadius(int size) {
-        cherryRadius = size;
-        System.out.println("Cherry radius is = " + cherryRadius);
-        repaint();
-    }
-
-    public int[][] getBorders() {
-        return borders;
-    }
-
-    public void drawCherry(JTable table, int row, int column) {
-        table.setValueAt(new Cherry(), row, column);
-        table.repaint();
-    }
-
-    public void eraseCherry(JTable table, int row, int column) {
-        table.setValueAt(null, row, column);
-    }
-
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         JPanel cell = new JPanel(new BorderLayout());
@@ -95,23 +70,5 @@ public class MyCustomCellRenderer extends DefaultTableCellRenderer {
             cell.setBackground(Color.white);
         }
         return cell;
-    }
-
-    class Cherry {
-        private static final Color COLOR = Color.WHITE;
-        private int radius;
-
-
-        public Cherry() {
-            this.radius = cherryRadius;
-        }
-
-        public static Color getColor() {
-            return COLOR;
-        }
-
-        public int getRadius() {
-            return radius;
-        }
     }
 }

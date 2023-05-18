@@ -118,6 +118,9 @@ public class Menu extends JFrame implements KeyListener {
                     System.exit(0);
                     break;
             }
+        } else if (e.isShiftDown() && e.isControlDown() && e.getKeyCode()==KeyEvent.VK_Q) {
+            SwingUtilities.invokeLater(()->new Menu());
+            this.dispose();
         }
         setArrowVisibility();
     }

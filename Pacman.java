@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 class Pacman {
-    int [] speed={10,20,40,160,240,360};
-    File[][] images={
+    private boolean isInverted=false;
+    private int [] speed={10,20,40,160,240,360};
+    private File[][] images={
             {new File("pacmanImages/1left.png"),new File("pacmanImages/2left.png"),new File("pacmanImages/3left.png"),new File("pacmanImages/4left.png"),new File("pacmanImages/5left.png"),new File("pacmanImages/6left.png")},
             {new File("pacmanImages/1up.png"),new File("pacmanImages/2up.png"),new File("pacmanImages/3up.png"),new File("pacmanImages/4up.png"),new File("pacmanImages/5up.png"),new File("pacmanImages/6up.png"),},
             {new File("pacmanImages/1right.png"),new File("pacmanImages/2right.png"),new File("pacmanImages/3right.png"),new File("pacmanImages/4right.png"),new File("pacmanImages/5right.png"),new File("pacmanImages/6right.png"),},
@@ -16,16 +17,16 @@ class Pacman {
      * right
      * down
      */
-    int speedIndex=2;
-    int positionImage=0;
+    private int speedIndex=2;
+    private int positionImage=0;
     private int lives=3;
     private boolean isStarted=false;
-    int scoreCounter=-10;
-    int[][] cells;
-    int cellsWidth;
-    int cellsHeight;
-    Game game;
-    ArrayList<Ghost> ghosts=new ArrayList<>();
+    private int scoreCounter=-10;
+    private int[][] cells;
+    private int cellsWidth;
+    private int cellsHeight;
+    private Game game;
+    private ArrayList<Ghost> ghosts=new ArrayList<>();
     private int x;
     private int y;
     private int dx;
@@ -85,20 +86,9 @@ class Pacman {
         return radius;
     }
 
-    public void setMouthOpened(boolean mouthOpened) {
-        isMouthOpened = mouthOpened;
-    }
-    public boolean getMouthOpened(){
-        return isMouthOpened;
-    }
-
     public void setSpeedIndex(int speedIndex) {
         this.speedIndex = speedIndex;
     }
-    public int getSpeedIndex() {
-        return speedIndex;
-    }
-
     public void setStarted(boolean started) {
         isStarted = started;
     }
@@ -111,14 +101,6 @@ class Pacman {
                     game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),radius,radius);
                     moveIfPossible();
                     try {
-//                        for (int i=0;i<3;i++){
-//                            setMouthOpened(true);
-//                            game.circlePanel.repaint(convertXtoPixels(),convertYtoPixels(),convertXtoPixels()+2*radius,convertYtoPixels()+2*radius);
-//                            Thread.sleep(speed[speedIndex]);
-//                            setMouthOpened(false);
-//                            game.circlePanel.repaint();
-//                            Thread.sleep(speed[speedIndex]);
-//                        }
                         for (int j=0;j<2;j++){
                             for (int i=0;i<images[0].length-1;i++){
                                 positionImage=i;
@@ -151,19 +133,21 @@ class Pacman {
         return rectangle.y;
     }
     public synchronized void moveIfPossible(){
-        cellsWidth = cells.length;      // number of rows
-        cellsHeight = cells[0].length;  // number of columns in the first row
+        cellsWidth = cells.length;
+        cellsHeight = cells[0].length;
         int nextX = x + dx;
         int nextY = y + dy;
 
-        // Check if Pacman is at the edge of the map and the next move would cause an index out of bounds exception
+        /**
+         * IF AT THE EDGE - MOVE TO THE OTHER SIDE OF THE BOARD
+         */
         boolean isAtLeftEdge = (x == 0 && dx == -1);
         boolean isAtRightEdge = (x == cellsWidth - 1 && dx == 1);
         boolean isAtTopEdge = (y == 0 && dy == -1);
         boolean isAtBottomEdge = (y == cellsHeight - 1 && dy == 1);
 
         if (isAtLeftEdge || isAtRightEdge || isAtTopEdge || isAtBottomEdge) {
-            // If at the edge, wrap Pacman's position to the opposite side of the map
+            //IF ONE OF THEM THEN MOVE
             if (isAtLeftEdge) {
                 x = cellsWidth - 1;
             } else if (isAtRightEdge) {
@@ -174,9 +158,9 @@ class Pacman {
                 y = 0;
             }
         } else {
-            // If not at the edge, check if the next move is valid and update Pacman's position
+            //if not at the edge then move if it is not a block
             try {
-                if (game.getCellValue(nextY, nextX)!=1){
+                if (game.getCellValue(nextY, nextX)!=1){//if not block then check if there is a ghost
                     boolean isGhost=false;
                     for (Ghost ghost: ghosts){
                         if (ghost.getX() == x + dx && ghost.getY() == y + dy) {
@@ -187,14 +171,14 @@ class Pacman {
                     if (!isGhost){
                         x += dx;
                         y += dy;
-                        if (cells[y][x]==2){
+                        if (cells[y][x]==2){// small cherry
                             cells[y][x]=0;
                             scoreCounter+=10;
                             game.scoreLabel.setText(String.valueOf(scoreCounter));
                             System.out.println(scoreCounter);
                             game.borderTable.repaint(convertXtoPixels(),convertYtoPixels(),radius,radius);// HERE
                         }
-                        if (cells[y][x]==3){
+                        if (cells[y][x]==3){ //big cherry
                             cells[y][x]=0;
                             int random=new Random().nextInt(10);
                             if (random<6){
@@ -214,22 +198,15 @@ class Pacman {
             }
         }
     }
-
     public File getPacmanImage(){
         return images[position][positionImage];
     }
-
-
     private Rectangle getCoordinatesOfTheCell(int row, int column){
         return game.borderTable.getCellRect(row, column, true);
     }
 
     public void setPosition(int position) {
         this.position = position;
-    }
-
-    public int getPosition() {
-        return position;
     }
 
     public int getLives() {
@@ -251,5 +228,25 @@ class Pacman {
 
     public int getScoreCounter() {
         return scoreCounter;
+    }
+    public void teleportRandomPoint(){
+        boolean isPossible=false;
+        int randomX;
+        int randomY;
+        do{
+            randomX=new Random().nextInt(game.SIZE);
+            randomY=new Random().nextInt(game.SIZE);
+            if (cells[randomY][randomX]!=1)
+                isPossible=true;
+        }while (!isPossible);
+        x=randomX;
+        y=randomY;
+    }
+
+    public void changeInverted() {
+        isInverted = !isInverted;
+    }
+    public boolean getIsInverted(){
+        return isInverted;
     }
 }

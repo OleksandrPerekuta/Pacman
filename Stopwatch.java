@@ -5,17 +5,16 @@ public class Stopwatch extends Thread{
     public Stopwatch(Game game){
         this.game=game;
     }
-
     @Override
     public void run() {
         while (true) {
             try {
-                Thread.sleep(1000); // sleep for 1 second
+                Thread.sleep(1000);
                 if (seconds==59){
                     seconds=0;
                     minutes++;
                 }else{
-                    seconds++; // increment the seconds counter
+                    seconds++;
                 }
                 setTextOnLabel();
             } catch (InterruptedException e) {
@@ -29,25 +28,12 @@ public class Stopwatch extends Thread{
         if (seconds>9)
             secondsString= String.valueOf(seconds);
         else
-            secondsString="0"+String.valueOf(seconds);
+            secondsString="0"+seconds;
 
         if (minutes>9)
             minutesString= String.valueOf(minutes);
         else
-            minutesString="0"+String.valueOf(minutes);
+            minutesString="0"+minutes;
         game.timerLabel.setText(minutesString+":"+secondsString);
-    }
-
-    public int getMinutes() {
-        return minutes;
-    }
-
-    public int getSeconds() {
-        return seconds;
-    }
-
-    public void reset() {
-        seconds = 0;
-        minutes=0;
     }
 }

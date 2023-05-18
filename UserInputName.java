@@ -64,11 +64,13 @@ public class UserInputName extends JFrame implements KeyListener {
             this.dispose();
         }else if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
             nameLabel.setText("");
+        }else if (e.isShiftDown() && e.isControlDown() && e.getKeyCode()==KeyEvent.VK_Q) {
+            SwingUtilities.invokeLater(()->new Menu());
+            this.dispose();
         }
     }
     public void keyTyped(KeyEvent e) {
         nameLabel.setText(nameLabel.getText() + e.getKeyChar());
     }
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) {}
 }

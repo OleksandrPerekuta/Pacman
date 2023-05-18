@@ -61,12 +61,6 @@ public class Winning extends JFrame implements KeyListener {
         downLabel.setHorizontalAlignment(SwingConstants.CENTER);
         downLabel.setVerticalAlignment(SwingConstants.CENTER);
 
-
-
-
-
-
-
         for (Component c: mainPanel.getComponents())
             c.setBackground(Color.black);
         mainPanel.setBackground(Color.black);
@@ -85,10 +79,7 @@ public class Winning extends JFrame implements KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
-
+    public void keyTyped(KeyEvent e) {}
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode()==KeyEvent.VK_ENTER) {
@@ -100,11 +91,7 @@ public class Winning extends JFrame implements KeyListener {
             }
             System.exit(0);
         }
-
     }
-
     @Override
-    public void keyReleased(KeyEvent e) {
-
-    }
+    public void keyReleased(KeyEvent e) {}
 }

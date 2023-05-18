@@ -105,26 +105,24 @@ public class SizeOfTheMap extends JFrame implements KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {                    //increse size map
         if (e.getKeyCode() == KeyEvent.VK_UP && planeSize < 100){
             planeSize++;
             sizeLabel.setText(String.valueOf(planeSize));
-        }else if (e.getKeyCode() == KeyEvent.VK_DOWN && planeSize > 10) {
+        }else if (e.getKeyCode() == KeyEvent.VK_DOWN && planeSize > 10) {       //decrease size map
             planeSize--;
             sizeLabel.setText(String.valueOf(planeSize));
-        } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+        } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {               //go to the next frame
             SwingUtilities.invokeLater(()->new Game(Integer.parseInt(sizeLabel.getText()),this.userName));
+            this.dispose();
+        }else if (e.isShiftDown() && e.isControlDown() && e.getKeyCode()==KeyEvent.VK_Q) { //ctrl shift q
+            SwingUtilities.invokeLater(()->new Menu());
             this.dispose();
         }
     }
-
     @Override
-    public void keyReleased(KeyEvent e) {
-
-    }
+    public void keyReleased(KeyEvent e) {}
 }
