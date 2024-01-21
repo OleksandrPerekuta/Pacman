@@ -14,14 +14,14 @@ This is game Pacman implemented in Java Swing during the course of Graphical Use
 
 my additions:
 
-**by eating a big pill, a couple of things can happen to Pac-Man:**
- -change of Pacman's speed
- -change of Ghost's speed
- -teleportation
- -inversion of keys (e.g. Pac-Man will go up by pressing key down)
- -change of Ghost's color
-**During the creation of the labyrinth, DFS algorithm was used**
-**After loss, the player's score is written to the file**
+* **by eating a big pill, a couple of things can happen to Pac-Man:**
+ *change of Pacman's speed
+ *change of Ghost's speed
+ *teleportation
+ *inversion of keys (e.g. Pac-Man will go up by pressing key down)
+ *change of Ghost's color
+* **During the creation of the labyrinth, DFS algorithm was used**
+* **After loss, the player's score is written to the file**
 
 
 link to watch the project:
