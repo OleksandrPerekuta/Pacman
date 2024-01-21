@@ -4,9 +4,9 @@ This is game Pacman implemented in Java Swing during the course of Graphical Use
 
 
 **The conditions were:**
-* to have menues New Game, High Scores, and Exit
+* to have menus New Game, High Scores, and Exit
 * the player would be able to choose the size of the playing field
-* own implementation of JTable and CellRenderer
+* playing field must be based on JTable and own implementation of CellRenderer
 * all moments related to time must be implemented using Threads
 * Implement the possibility of interrupting the game using the shortcut of Control+Shift+Q
 * the window must be scalable
