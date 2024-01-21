@@ -1,6 +1,8 @@
 # Pacman
 
-This is game Pacman implemented in Java Swing during the course of Graphical User Interfaces at PJAIT.\n
+This is game Pacman implemented in Java Swing during the course of Graphical User Interfaces at PJAIT.
+
+
 **The conditions were:**
 to have menu New Game, High Scores and Exit
 player would be able to choose size of playing field
